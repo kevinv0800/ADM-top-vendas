@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-mz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel ADM | Premium Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0915;
+            --card: #151321;
+            --primary: #00c6ff;
+            --accent: #7b2cbf;
+            --text: #ffffff;
+            --border: rgba(255,255,255,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        nav { width: 250px; background: var(--card); border-right: 1px solid var(--border); padding: 20px; }
+        .logo-adm { font-weight: 800; color: var(--primary); margin-bottom: 30px; display: block; text-align: center; }
+        .nav-link { display: block; padding: 12px; color: #8b8b9b; text-decoration: none; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
+        .nav-link.active { background: var(--primary); color: #000; font-weight: 600; }
+
+        /* Main Content */
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h2 { margin-bottom: 20px; font-size: 1.5rem; }
+
+        /* Forms */
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 15px; 
+        }
+        button { 
+            padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; 
+            font-weight: 600; transition: 0.3s; 
+        }
+        .btn-save { background: var(--primary); color: #000; }
+        .btn-delete { background: #ff4d4d; color: #fff; padding: 5px 10px; font-size: 0.8rem; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; color: var(--primary); padding: 10px; border-bottom: 2px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .img-preview { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            nav { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+            .grid-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <span class="logo-adm">ADMIN PANEL</span>
+        <div class="nav-link active" onclick="showSec('prodSec', this)"><i class="fa fa-box"></i> Produtos</div>
+        <div class="nav-link" onclick="showSec('configSec', this)"><i class="fa fa-cog"></i> Configurações</div>
+        <div class="nav-link" onclick="showSec('promoSec', this)"><i class="fa fa-ad"></i> Banners/Promo</div>
+    </nav>
+
+    <main>
+        <div id="prodSec" class="section active">
+            <h2>Gerenciar Produtos</h2>
+            <div class="card">
+                <h3>Adicionar Novo Produto</h3>
+                <form id="prodForm" class="grid-form">
+                    <input type="text" id="pName" placeholder="Nome do Produto" required>
+                    <select id="pCat">
+                        <option value="camisa">Camisa</option>
+                        <option value="calca">Calça</option>
+                        <option value="sapato">Sapato</option>
+                        <option value="perfume">Perfume</option>
+                    </select>
+                    <input type="number" id="pPrice" placeholder="Preço (MT)" required>
+                    <input type="text" id="pImg" placeholder="Link da Imagem (URL)" required>
+                    <input type="text" id="pSizes" placeholder="Tamanhos (ex: M, G, 42)">
+                    <input type="text" id="pColors" placeholder="Cores/Versões (ex: Preto, Azul)">
+                    <div style="grid-column: 1/-1;">
+                        <label><input type="checkbox" id="pPromo"> Produto em Promoção?</label>
+                    </div>
+                    <button type="submit" class="btn-save">CADASTRAR PRODUTO</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Lista de Produtos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Img</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prodList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="configSec" class="section">
+            <h2>Configurações da Loja</h2>
+            <div class="card">
+                <h3>Contacto da Loja</h3>
+                <p style="font-size: 0.8rem; color: #8b8b9b; margin-bottom: 10px;">Este é o número que receberá as mensagens do WhatsApp.</p>
+                <input type="text" id="storeWa" placeholder="Ex: 258840000000">
+                <button class="btn-save" onclick="saveSettings()">SALVAR ALTERAÇÕES</button>
+            </div>
+
+            <div class="card">
+                <h3>Métodos de Pagamento (Info)</h3>
+                <p>Status atual: <b>Ativo (M-Pesa / E-Mola)</b></p>
+                <small>As instruções de pagamento são enviadas via WhatsApp automaticamente.</small>
+            </div>
+        </div>
+
+        <div id="promoSec" class="section">
+            <h2>Banners de Destaque</h2>
+            <div class="card">
+                <h3>Adicionar Banner/Slide</h3>
+                <input type="text" id="bannerUrl" placeholder="URL da Imagem do Banner">
+                <button class="btn-save" onclick="addBanner()">ADICIONAR BANNER</button>
+                <div id="bannerList" style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPKEeQwU3vsNqWyLjgb7czsk_8-wzPfPo",
+            authDomain: "criador-6da7a.firebaseapp.com",
+            databaseURL: "https://criador-6da7a-default-rtdb.firebaseio.com",
+            projectId: "criador-6da7a",
+            storageBucket: "criador-6da7a.firebasestorage.app",
+            messagingSenderId: "227610191967",
+            appId: "1:227610191967:web:40b9727ce93b655bbad3ea",
+            measurementId: "G-YR21X469EH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- NAVEGAÇÃO ---
+        window.showSec = (id, el) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        };
+
+        // --- PRODUTOS ---
+        const prodForm = document.getElementById('prodForm');
+        prodForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const newProd = {
+                name: document.getElementById('pName').value,
+                cat: document.getElementById('pCat').value,
+                price: Number(document.getElementById('pPrice').value),
+                img: document.getElementById('pImg').value,
+                promo: document.getElementById('pPromo').checked,
+                sizes: document.getElementById('pSizes').value.split(','),
+                variants: { "Padrão": document.getElementById('pImg').value }
+            };
+            
+            await addDoc(collection(db, "products"), newProd);
+            prodForm.reset();
+            alert("Produto cadastrado!");
+        };
+
+        onSnapshot(collection(db, "products"), (snap) => {
+            const list = document.getElementById('prodList');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const p = d.data();
+                list.innerHTML += `
+                    <tr>
+                        <td><img src="${p.img}" class="img-preview"></td>
+                        <td>${p.name}</td>
+                        <td>${p.price} MT</td>
+                        <td><button class="btn-delete" onclick="delProd('${d.id}')">Excluir</button></td>
+                    </tr>
+                `;
+            });
+        });
+
+        window.delProd = async (id) => {
+            if(confirm("Deseja apagar?")) await deleteDoc(doc(db, "products", id));
+        };
+
+        // --- CONFIGURAÇÕES ---
+        window.saveSettings = async () => {
+            const num = document.getElementById('storeWa').value;
+            await setDoc(doc(db, "settings", "store"), { whatsapp: num });
+            alert("Contacto atualizado!");
+        };
+
+        // Carregar número atual
+        const configRef = doc(db, "settings", "store");
+        const configSnap = await getDoc(configRef);
+        if(configSnap.exists()) document.getElementById('storeWa').value = configSnap.data().whatsapp;
+
+    </script>
+</body>
+</html>
