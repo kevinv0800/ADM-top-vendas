@@ -3,215 +3,428 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel ADM | Premium Store</title>
+    <title>MASTER ADMIN | Ultimate</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #0b0915;
-            --card: #151321;
-            --primary: #00c6ff;
-            --accent: #7b2cbf;
-            --text: #ffffff;
-            --border: rgba(255,255,255,0.1);
+            --bg: #0a0b10;
+            --sidebar: #111217;
+            --card: #1c1d24;
+            --primary: #29b6f6;
+            --danger: #ef5350;
+            --success: #00e676;
+            --text: #eceff1;
+            --muted: #90a4ae;
+            --border: rgba(255,255,255,0.05);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar */
-        nav { width: 250px; background: var(--card); border-right: 1px solid var(--border); padding: 20px; }
-        .logo-adm { font-weight: 800; color: var(--primary); margin-bottom: 30px; display: block; text-align: center; }
-        .nav-link { display: block; padding: 12px; color: #8b8b9b; text-decoration: none; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
+        aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px; transition: 0.3s; z-index: 100; }
+        .brand { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        
+        .nav-link { 
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
+            color: var(--muted); text-decoration: none; border-radius: 10px; margin-bottom: 8px; 
+            transition: 0.2s; cursor: pointer; font-size: 0.95rem;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: #fff; }
         .nav-link.active { background: var(--primary); color: #000; font-weight: 600; }
 
-        /* Main Content */
-        main { flex: 1; padding: 40px; overflow-y: auto; }
-        .section { display: none; }
-        .section.active { display: block; }
+        /* Main */
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .mobile-menu { display: none; font-size: 1.5rem; cursor: pointer; }
 
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h2 { margin-bottom: 20px; font-size: 1.5rem; }
+        /* Stats */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--primary); opacity: 0.3; }
+        .stat-num { font-size: 1.8rem; font-weight: 700; margin-top: 5px; color: #fff; }
+        .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Content */
+        .content-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 25px; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Forms */
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, select, textarea { 
-            width: 100%; padding: 12px; background: rgba(255,255,255,0.05); 
-            border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 15px; 
-        }
-        button { 
-            padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; 
-            font-weight: 600; transition: 0.3s; 
-        }
-        .btn-save { background: var(--primary); color: #000; }
-        .btn-delete { background: #ff4d4d; color: #fff; padding: 5px 10px; font-size: 0.8rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--muted); }
+        input, select, textarea { width: 100%; background: #050505; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: #fff; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(41, 182, 246, 0.2); }
+        
+        button { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-danger { background: rgba(239, 83, 80, 0.1); color: var(--danger); border: 1px solid rgba(239, 83, 80, 0.2); font-size: 0.8rem; padding: 8px 12px; }
+        .btn-success { background: rgba(0, 230, 118, 0.1); color: var(--success); border: 1px solid rgba(0, 230, 118, 0.2); font-size: 0.8rem; padding: 8px 12px; }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
 
-        /* Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; color: var(--primary); padding: 10px; border-bottom: 2px solid var(--border); }
-        td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .img-preview { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
+        /* Tables & Badges */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: var(--muted); border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .img-preview { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+        
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .status-pending { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
+        .status-completed { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+
+        .hidden { display: none !important; }
 
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            nav { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
-            .grid-form { grid-template-columns: 1fr; }
+            aside { position: fixed; left: -260px; height: 100%; }
+            aside.open { left: 0; }
+            .mobile-menu { display: block; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <span class="logo-adm">ADMIN PANEL</span>
-        <div class="nav-link active" onclick="showSec('prodSec', this)"><i class="fa fa-box"></i> Produtos</div>
-        <div class="nav-link" onclick="showSec('configSec', this)"><i class="fa fa-cog"></i> Configurações</div>
-        <div class="nav-link" onclick="showSec('promoSec', this)"><i class="fa fa-ad"></i> Banners/Promo</div>
-    </nav>
+    <aside id="sidebar">
+        <div class="brand"><i class="fa-solid fa-rocket"></i> MASTER ULTRA</div>
+        <nav>
+            <div class="nav-link active" onclick="nav('dash', this)"><i class="fa fa-home"></i> Dashboard</div>
+            <div class="nav-link" onclick="nav('orders', this)"><i class="fa fa-shopping-cart"></i> Pedidos</div>
+            <div class="nav-link" onclick="nav('prod', this)"><i class="fa fa-box"></i> Produtos</div>
+            <div class="nav-link" onclick="nav('cat', this)"><i class="fa fa-list"></i> Categorias</div>
+            <div class="nav-link" onclick="nav('banners', this)"><i class="fa fa-images"></i> Banners</div>
+            <div class="nav-link" onclick="nav('users', this)"><i class="fa fa-users"></i> Clientes</div>
+            <div class="nav-link" onclick="nav('config', this)"><i class="fa fa-cog"></i> Configurações</div>
+        </nav>
+    </aside>
 
     <main>
-        <div id="prodSec" class="section active">
-            <h2>Gerenciar Produtos</h2>
-            <div class="card">
-                <h3>Adicionar Novo Produto</h3>
-                <form id="prodForm" class="grid-form">
-                    <input type="text" id="pName" placeholder="Nome do Produto" required>
-                    <select id="pCat">
-                        <option value="camisa">Camisa</option>
-                        <option value="calca">Calça</option>
-                        <option value="sapato">Sapato</option>
-                        <option value="perfume">Perfume</option>
-                    </select>
-                    <input type="number" id="pPrice" placeholder="Preço (MT)" required>
-                    <input type="text" id="pImg" placeholder="Link da Imagem (URL)" required>
-                    <input type="text" id="pSizes" placeholder="Tamanhos (ex: M, G, 42)">
-                    <input type="text" id="pColors" placeholder="Cores/Versões (ex: Preto, Azul)">
-                    <div style="grid-column: 1/-1;">
-                        <label><input type="checkbox" id="pPromo"> Produto em Promoção?</label>
+        <header>
+            <i class="fa fa-bars mobile-menu" onclick="document.getElementById('sidebar').classList.toggle('open')"></i>
+            <h2 id="view-title">Dashboard</h2>
+        </header>
+
+        <div id="view-dash">
+            <div class="grid-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Faturamento (Mês)</div>
+                    <div class="stat-num" id="stat-money" style="color:var(--success)">0 MT</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Produtos</div>
+                    <div class="stat-num" id="stat-p">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Clientes</div>
+                    <div class="stat-num" id="stat-u">0</div>
+                </div>
+            </div>
+            <div class="content-card">
+                <h3>Status do Sistema</h3>
+                <p style="color:var(--muted); margin-top:10px;">O painel está sincronizado. Novos pedidos aparecerão instantaneamente na aba 'Pedidos'.</p>
+            </div>
+        </div>
+
+        <div id="view-orders" class="hidden">
+            <div class="content-card">
+                <h3>Gestão de Pedidos</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Data</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ação</th></tr></thead>
+                        <tbody id="table-orders"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-prod" class="hidden">
+            <div class="content-card">
+                <h3>Novo Produto</h3>
+                <form id="pForm" style="margin-top:20px;">
+                    <div class="form-row">
+                        <div style="grid-column: 1/-1">
+                            <label>Nome do Produto</label>
+                            <input id="pName" required placeholder="Ex: iPhone 15 Pro Max">
+                        </div>
                     </div>
-                    <button type="submit" class="btn-save">CADASTRAR PRODUTO</button>
+                    <div class="form-row-3">
+                        <div><label>Preço (MT)</label><input id="pPrice" type="number" required></div>
+                        <div>
+                            <label>Categoria (Crie na aba Categorias)</label>
+                            <select id="pCat"><option>Carregando...</option></select>
+                        </div>
+                        <div><label>Selo Promo?</label>
+                            <select id="pPromo"><option value="false">Não</option><option value="true">Sim (Destaque)</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div><label>Foto 1 (Principal)</label><input id="pImg1" required placeholder="URL da Imagem"></div>
+                        <div><label>Foto 2 (Quick View)</label><input id="pImg2" placeholder="URL da Imagem"></div>
+                        <div><label>Foto 3 (Quick View)</label><input id="pImg3" placeholder="URL da Imagem"></div>
+                    </div>
+                    <div class="form-row">
+                        <div><label>Tamanhos (P, M, G...)</label><input id="pSizes" placeholder="Separe por vírgula"></div>
+                        <div><label>Cores (Azul, Preto...)</label><input id="pColors" placeholder="Separe por vírgula"></div>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa fa-save"></i> Publicar Produto</button>
                 </form>
             </div>
-
-            <div class="card">
-                <h3>Lista de Produtos</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Img</th>
-                            <th>Nome</th>
-                            <th>Preço</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="prodList"></tbody>
-                </table>
+            <div class="content-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Foto</th><th>Nome</th><th>Preço</th><th>Categoria</th><th>Ações</th></tr></thead>
+                        <tbody id="table-p"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div id="configSec" class="section">
-            <h2>Configurações da Loja</h2>
-            <div class="card">
-                <h3>Contacto da Loja</h3>
-                <p style="font-size: 0.8rem; color: #8b8b9b; margin-bottom: 10px;">Este é o número que receberá as mensagens do WhatsApp.</p>
-                <input type="text" id="storeWa" placeholder="Ex: 258840000000">
-                <button class="btn-save" onclick="saveSettings()">SALVAR ALTERAÇÕES</button>
+        <div id="view-cat" class="hidden">
+            <div class="content-card">
+                <h3>Gerenciar Categorias</h3>
+                <div style="display:flex; gap:10px;">
+                    <input id="catName" style="flex:1" placeholder="Ex: Relógios, Tech, Calçados">
+                    <button onclick="addCat()" class="btn-primary">Criar</button>
+                </div>
+                <div class="table-responsive" style="margin-top:20px;">
+                    <table>
+                        <thead><tr><th>Nome</th><th>ID do Filtro</th><th>Ação</th></tr></thead>
+                        <tbody id="table-cat"></tbody>
+                    </table>
+                </div>
             </div>
+        </div>
 
-            <div class="card">
-                <h3>Métodos de Pagamento (Info)</h3>
-                <p>Status atual: <b>Ativo (M-Pesa / E-Mola)</b></p>
-                <small>As instruções de pagamento são enviadas via WhatsApp automaticamente.</small>
+        <div id="view-banners" class="hidden">
+            <div class="content-card">
+                <h3>Adicionar Banner (Mídia)</h3>
+                <div class="form-row">
+                    <div><label>URL (IMG ou MP4)</label><input id="bUrl" placeholder="Cole o link"></div>
+                    <div><label>Link Destino</label><input id="bLink" placeholder="Link opcional"></div>
+                </div>
+                <div class="form-row-3">
+                    <div><label>Tipo</label><select id="bType"><option value="image">Imagem</option><option value="video">Vídeo</option></select></div>
+                    <div style="display:flex; align-items:flex-end;"><button onclick="addB()" class="btn-primary" style="width:100%">Adicionar</button></div>
+                </div>
+                <div id="list-b" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-top:25px;"></div>
             </div>
         </div>
 
-        <div id="promoSec" class="section">
-            <h2>Banners de Destaque</h2>
-            <div class="card">
-                <h3>Adicionar Banner/Slide</h3>
-                <input type="text" id="bannerUrl" placeholder="URL da Imagem do Banner">
-                <button class="btn-save" onclick="addBanner()">ADICIONAR BANNER</button>
-                <div id="bannerList" style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></div>
+        <div id="view-users" class="hidden">
+            <div class="content-card">
+                <h3>Clientes Cadastrados</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Nome</th><th>Contato</th><th>Status</th><th>Ação</th></tr></thead>
+                        <tbody id="table-u"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        <div id="view-config" class="hidden">
+            <div class="content-card">
+                <h3>Configurações Gerais</h3>
+                <div class="form-row">
+                    <div><label>Logo URL</label><input id="cLogo"></div>
+                    <div><label>Link App Android</label><input id="cApp"></div>
+                </div>
+                <div class="form-row">
+                    <div><label>WhatsApp</label><input id="cWa"></div>
+                    <div><label>Telefone Chamadas</label><input id="cPh"></div>
+                </div>
+                <div class="form-row">
+                    <div><label>% Depósito Obrigatório</label><input id="cDep" type="number"></div>
+                    <div><label>Link Social (Insta/FB)</label><input id="cSocial"></div>
+                </div>
+                <div class="form-group"><label>Texto "Sobre Nós"</label><textarea id="cAbout" rows="3" style="width:100%; background:#050505; border:1px solid var(--border); color:#fff; padding:10px; border-radius:8px;"></textarea></div>
+                <button onclick="saveC()" class="btn-primary" style="margin-top:15px;"><i class="fa fa-sync"></i> Atualizar Loja</button>
+            </div>
+        </div>
+
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAPKEeQwU3vsNqWyLjgb7czsk_8-wzPfPo",
             authDomain: "criador-6da7a.firebaseapp.com",
-            databaseURL: "https://criador-6da7a-default-rtdb.firebaseio.com",
             projectId: "criador-6da7a",
             storageBucket: "criador-6da7a.firebasestorage.app",
             messagingSenderId: "227610191967",
-            appId: "1:227610191967:web:40b9727ce93b655bbad3ea",
-            measurementId: "G-YR21X469EH"
+            appId: "1:227610191967:web:40b9727ce93b655bbad3ea"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- NAVEGAÇÃO ---
-        window.showSec = (id, el) => {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        // NAVEGAÇÃO
+        window.nav = (id, el) => {
+            document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('view-'+id).classList.remove('hidden');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
             el.classList.add('active');
+            document.getElementById('view-title').innerText = el.innerText;
+            document.getElementById('sidebar').classList.remove('open');
         };
 
-        // --- PRODUTOS ---
-        const prodForm = document.getElementById('prodForm');
-        prodForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const newProd = {
-                name: document.getElementById('pName').value,
-                cat: document.getElementById('pCat').value,
-                price: Number(document.getElementById('pPrice').value),
-                img: document.getElementById('pImg').value,
-                promo: document.getElementById('pPromo').checked,
-                sizes: document.getElementById('pSizes').value.split(','),
-                variants: { "Padrão": document.getElementById('pImg').value }
-            };
+        // --- 1. PEDIDOS E FATURAMENTO (Do Código 2) ---
+        onSnapshot(query(collection(db, "orders"), orderBy("date", "desc")), (s) => {
+            let totalMonth = 0;
+            const currentMonth = new Date().getMonth();
+
+            document.getElementById('table-orders').innerHTML = s.docs.map(d => {
+                const data = d.data();
+                const isSold = data.status === 'completed';
+                
+                // Soma ao faturamento se confirmado e for deste mês
+                if(isSold && new Date(data.date).getMonth() === currentMonth) {
+                    totalMonth += data.total;
+                }
+
+                return `
+                <tr>
+                    <td>${new Date(data.date).toLocaleDateString()}</td>
+                    <td>${data.userName}<br><small style="color:var(--muted)">${data.userEmail}</small></td>
+                    <td>${data.total} MT</td>
+                    <td><span class="status-badge ${isSold ? 'status-completed' : 'status-pending'}">${isSold ? 'Pago / Entregue' : 'Pendente'}</span></td>
+                    <td>
+                        <button class="${isSold ? 'btn-danger' : 'btn-success'}" onclick="toggleStatus('${d.id}', '${data.status}')">
+                            ${isSold ? 'Cancelar' : 'Confirmar'}
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
             
-            await addDoc(collection(db, "products"), newProd);
-            prodForm.reset();
-            alert("Produto cadastrado!");
-        };
-
-        onSnapshot(collection(db, "products"), (snap) => {
-            const list = document.getElementById('prodList');
-            list.innerHTML = "";
-            snap.forEach(d => {
-                const p = d.data();
-                list.innerHTML += `
-                    <tr>
-                        <td><img src="${p.img}" class="img-preview"></td>
-                        <td>${p.name}</td>
-                        <td>${p.price} MT</td>
-                        <td><button class="btn-delete" onclick="delProd('${d.id}')">Excluir</button></td>
-                    </tr>
-                `;
-            });
+            document.getElementById('stat-money').innerText = totalMonth.toLocaleString() + " MT";
         });
 
-        window.delProd = async (id) => {
-            if(confirm("Deseja apagar?")) await deleteDoc(doc(db, "products", id));
+        window.toggleStatus = async (id, current) => {
+            const newStatus = current === 'completed' ? 'pending' : 'completed';
+            await updateDoc(doc(db, "orders", id), { status: newStatus });
+        }
+
+        // --- 2. CATEGORIAS (Dinâmico - Do Código 1) ---
+        window.addCat = async () => {
+            const name = document.getElementById('catName').value;
+            if(!name) return;
+            const filterId = name.toLowerCase().replace(/\s/g, '');
+            await addDoc(collection(db, "categories"), { name, id: filterId });
+            document.getElementById('catName').value = '';
         };
 
-        // --- CONFIGURAÇÕES ---
-        window.saveSettings = async () => {
-            const num = document.getElementById('storeWa').value;
-            await setDoc(doc(db, "settings", "store"), { whatsapp: num });
-            alert("Contacto atualizado!");
+        onSnapshot(collection(db, "categories"), (s) => {
+            let tableHtml = '';
+            let selectHtml = '<option value="todos">Selecione...</option>';
+            s.docs.forEach(d => {
+                const data = d.data();
+                tableHtml += `<tr><td>${data.name}</td><td>${data.id}</td><td><button class="btn-danger" onclick="delD('categories','${d.id}')">Excluir</button></td></tr>`;
+                selectHtml += `<option value="${data.id}">${data.name}</option>`;
+            });
+            document.getElementById('table-cat').innerHTML = tableHtml;
+            document.getElementById('pCat').innerHTML = selectHtml;
+        });
+
+        // --- 3. PRODUTOS (Com Quick View - Do Código 1) ---
+        document.getElementById('pForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const img1 = document.getElementById('pImg1').value;
+            const img2 = document.getElementById('pImg2').value;
+            const img3 = document.getElementById('pImg3').value;
+            
+            await addDoc(collection(db, "products"), {
+                name: document.getElementById('pName').value,
+                price: Number(document.getElementById('pPrice').value),
+                cat: document.getElementById('pCat').value,
+                promo: document.getElementById('pPromo').value === "true",
+                img: img1,
+                images: [img1, img2, img3].filter(Boolean), // Array limpo
+                sizes: document.getElementById('pSizes').value.split(',').map(s => s.trim()),
+                colors: document.getElementById('pColors').value.split(',').map(c => c.trim()),
+                date: Date.now()
+            });
+            e.target.reset(); alert("Produto publicado!");
         };
 
-        // Carregar número atual
-        const configRef = doc(db, "settings", "store");
-        const configSnap = await getDoc(configRef);
-        if(configSnap.exists()) document.getElementById('storeWa').value = configSnap.data().whatsapp;
+        onSnapshot(collection(db, "products"), (s) => {
+            document.getElementById('stat-p').innerText = s.size;
+            document.getElementById('table-p').innerHTML = s.docs.map(d => `
+                <tr>
+                    <td><img src="${d.data().img}" class="img-preview"></td>
+                    <td>${d.data().name}</td>
+                    <td>${d.data().price} MT</td>
+                    <td>${d.data().cat}</td>
+                    <td><button class="btn-danger" onclick="delD('products','${d.id}')"><i class="fa fa-trash"></i></button></td>
+                </tr>`).join('');
+        });
 
+        // --- 4. BANNERS (Vídeo/Img - Do Código 1) ---
+        window.addB = async () => {
+            const url = document.getElementById('bUrl').value;
+            const link = document.getElementById('bLink').value;
+            const type = document.getElementById('bType').value;
+            if(url) await addDoc(collection(db, "banners"), { url, link, type });
+            document.getElementById('bUrl').value = '';
+        };
+
+        onSnapshot(collection(db, "banners"), (s) => {
+            document.getElementById('list-b').innerHTML = s.docs.map(d => {
+                const isVideo = d.data().type === 'video';
+                return `
+                <div style="position:relative; background:#000; border-radius:10px; overflow:hidden">
+                    ${isVideo ? `<video src="${d.data().url}" style="width:100%; height:120px; object-fit:cover; opacity:0.6"></video>` : `<img src="${d.data().url}" style="width:100%; height:120px; object-fit:cover; opacity:0.6">`}
+                    <div style="position:absolute; bottom:5px; left:5px; font-size:10px; color:#fff">${isVideo ? '🎥 Vídeo' : '🖼️ Imagem'}</div>
+                    <button onclick="delD('banners','${d.id}')" style="position:absolute; top:5px; right:5px; background:red; border:none; color:#fff; width:24px; height:24px; border-radius:50%; cursor:pointer">×</button>
+                </div>`;
+            }).join('');
+        });
+
+        // --- 5. USUÁRIOS (Banir - Do Código 1) ---
+        onSnapshot(collection(db, "users"), (s) => {
+            document.getElementById('stat-u').innerText = s.size;
+            document.getElementById('table-u').innerHTML = s.docs.map(d => `
+                <tr>
+                    <td><b>${d.data().name || 'Visitante'}</b></td>
+                    <td>${d.data().email}<br><small>${d.data().phone || ''}</small></td>
+                    <td>${d.data().banned ? '<span style="color:var(--danger)">Banido</span>' : '<span style="color:var(--success)">Ativo</span>'}</td>
+                    <td><button class="btn-danger" style="background:${d.data().banned ? 'green' : 'red'}" onclick="banU('${d.id}', ${!d.data().banned})">${d.data().banned ? 'Desbanir' : 'Banir'}</button></td>
+                </tr>`).join('');
+        });
+        window.banU = async (id, st) => await updateDoc(doc(db, "users", id), { banned: st });
+
+        // --- 6. CONFIGURAÇÕES (Unificado) ---
+        onSnapshot(doc(db, "settings", "store"), (s) => {
+            if(s.exists()){
+                const d = s.data();
+                document.getElementById('cLogo').value = d.logo || '';
+                document.getElementById('cWa').value = d.whatsapp || '';
+                document.getElementById('cPh').value = d.phone || '';
+                document.getElementById('cSocial').value = d.social || '';
+                document.getElementById('cApp').value = d.appLink || '';
+                document.getElementById('cDep').value = d.depositPct || '';
+                document.getElementById('cAbout').value = d.about || '';
+            }
+        });
+
+        window.saveC = async () => {
+            await setDoc(doc(db, "settings", "store"), {
+                logo: document.getElementById('cLogo').value,
+                whatsapp: document.getElementById('cWa').value,
+                phone: document.getElementById('cPh').value,
+                social: document.getElementById('cSocial').value,
+                appLink: document.getElementById('cApp').value,
+                depositPct: Number(document.getElementById('cDep').value),
+                about: document.getElementById('cAbout').value
+            }, { merge: true });
+            alert("Configurações salvas!");
+        };
+
+        window.delD = async (c, id) => { if(confirm("Tem certeza?")) await deleteDoc(doc(db, c, id)); };
     </script>
 </body>
 </html>
