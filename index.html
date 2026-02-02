@@ -121,6 +121,14 @@
         .filter-btn { padding: 8px 16px; border-radius: 20px; background: #222; border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
         .filter-btn.active { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
 
+        /* Switch Toggle Style */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid var(--border); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
         .hidden { display: none !important; }
 
         @media (max-width: 900px) {
@@ -238,6 +246,7 @@
                     <div class="form-grid">
                         <div><label>Nome do Produto</label><input id="pName" required placeholder="Ex: iPhone 15"></div>
                         <div><label>Preço (MT)</label><input id="pPrice" type="number" required></div>
+                        <div><label style="color:var(--success)">Comissão (MT)</label><input id="pComm" type="number" placeholder="Valor p/ venda"></div>
                     </div>
                     <div class="form-grid">
                         <div><label>Categoria</label><select id="pCat"><option>Carregando...</option></select></div>
@@ -256,7 +265,7 @@
                 <input oninput="filterTable(this.value)" placeholder="🔍 Buscar produto..." style="margin-bottom:15px; max-width: 400px;">
                 <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Foto</th><th>Nome</th><th>Preço</th><th>Categ.</th><th>Excluir</th></tr></thead>
+                        <thead><tr><th>Foto</th><th>Nome</th><th>Preço</th><th style="color:var(--success)">Comissão</th><th>Categ.</th><th>Excluir</th></tr></thead>
                         <tbody id="tb-prod"></tbody>
                     </table>
                 </div>
@@ -278,8 +287,8 @@
             <h2>Banners da Loja</h2>
             <div class="content-card">
                 <div class="form-grid">
-                    <div><label>URL da Mídia (GIF/Imagem/Vídeo)</label><input id="bUrl" placeholder="Link da imagem"></div>
-                    <div><label>Tipo</label><select id="bType"><option value="image">Imagem</option><option value="video">Vídeo</option></select></div>
+                    <div><label>URL da Mídia (GIF/Imagem/Vídeo)</label><input id="bUrl" placeholder="Link da imagem/video"></div>
+                    <div><label>Tipo</label><select id="bType"><option value="image">Imagem</option><option value="video">Vídeo / GIF (MP4)</option></select></div>
                     <div><label>Link de Redirecionamento (Opcional)</label><input id="bLink" placeholder="Para onde vai ao clicar?"></div>
                 </div>
                 <button class="btn btn-primary" onclick="addBanner()">Adicionar Banner</button>
@@ -290,6 +299,37 @@
 
         <div id="view-content" class="hidden">
             <h2>Gestão de Conteúdo</h2>
+            
+            <div class="content-card" style="border: 1px solid var(--warning);">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                    <h3 style="color:var(--warning); font-size: 1.1rem;"><i class="fa fa-gift"></i> Promoção Festiva</h3>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:0.85rem; color:var(--muted)">Ativar Efeitos</span>
+                        <label class="switch">
+                            <input type="checkbox" id="promoActive">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div>
+                        <label>Título do Evento</label>
+                        <input id="promoTitle" placeholder="Ex: Feliz Natal, Black Friday...">
+                    </div>
+                    <div>
+                        <label>Animação da Loja</label>
+                        <select id="promoEffect">
+                            <option value="none">Sem animação</option>
+                            <option value="snow">Neve Caindo (Snow)</option>
+                            <option value="confetti">Chuva de Confetes</option>
+                            <option value="fireworks">Fogos de Artifício</option>
+                            <option value="gold">Chuva de Ouro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="content-card">
                 <h3 style="color:var(--primary); margin-bottom:15px; font-size: 1rem;">Links e Contato</h3>
                 <div class="form-grid">
@@ -487,10 +527,7 @@
 
         // --- Usuários ---
         onSnapshot(collection(db, "users"), (snap) => {
-            // Atualiza card da dashboard
             document.getElementById('st-users').innerText = snap.size;
-            
-            // Renderiza tabela de usuários
             usersList = snap.docs.map(d => ({id:d.id, ...d.data()}));
             renderUsers();
         });
@@ -520,7 +557,7 @@
             const original = [...usersList];
             usersList = usersList.filter(u => (u.name && u.name.toLowerCase().includes(term)) || (u.email && u.email.toLowerCase().includes(term)));
             renderUsers();
-            usersList = original; // Restaura lista completa para próxima busca
+            usersList = original;
         };
 
         // --- Produtos ---
@@ -530,9 +567,11 @@
             const img2 = document.getElementById('pImg2').value;
             
             try {
+                // ATUALIZADO: Inclui a comissão no cadastro
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: Number(document.getElementById('pPrice').value),
+                    commission: Number(document.getElementById('pComm').value) || 0, // Campo Novo
                     cat: document.getElementById('pCat').value,
                     img: img1,
                     images: [img1, img2].filter(Boolean),
@@ -552,11 +591,13 @@
         });
 
         window.renderProdTable = (list) => {
+            // ATUALIZADO: Mostra a coluna de comissão
             document.getElementById('tb-prod').innerHTML = list.map(p => `
                 <tr>
                     <td><img src="${p.img}" class="img-thumb"></td>
                     <td>${p.name}</td>
                     <td>${p.price} MT</td>
+                    <td style="color:var(--success); font-weight:bold;">${p.commission || 0} MT</td>
                     <td>${p.cat}</td>
                     <td><button class="btn btn-danger" onclick="delItem('products', '${p.id}')"><i class="fa fa-trash"></i></button></td>
                 </tr>
@@ -604,16 +645,20 @@
         onSnapshot(collection(db, "banners"), snap => {
             document.getElementById('banner-list').innerHTML = snap.docs.map(d => {
                 const data = d.data();
+                const mediaHtml = data.type === 'video' 
+                    ? `<video src="${data.url}" style="width:100%; height:100px; object-fit:cover" autoplay loop muted playsinline></video>` 
+                    : `<img src="${data.url}" style="width:100%; height:100px; object-fit:cover">`;
+
                 return `
                 <div style="position:relative; border:1px solid #333; border-radius:8px; overflow:hidden; animation: slideUp 0.3s ease;">
-                    ${data.type === 'video' ? '<video src="'+data.url+'" style="width:100%; height:100px; object-fit:cover"></video>' : '<img src="'+data.url+'" style="width:100%; height:100px; object-fit:cover">'}
+                    ${mediaHtml}
                     ${data.targetLink ? '<div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.7); color:#fff; font-size:0.7rem; padding:3px 5px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden;"><i class="fa fa-link"></i> '+data.targetLink+'</div>' : ''}
                     <button class="btn btn-danger" style="position:absolute; top:5px; right:5px; padding:5px 8px; font-size: 0.7rem;" onclick="delItem('banners', '${d.id}')"><i class="fa fa-trash"></i></button>
                 </div>
             `}).join('');
         });
 
-        // --- Configurações ---
+        // --- Configurações & Promoções ---
         window.saveConfig = async () => {
             await setDoc(doc(db, "settings", "store"), {
                 whatsapp: document.getElementById('cWa').value,
@@ -622,9 +667,12 @@
                 logo: document.getElementById('cLogo').value,
                 appLink: document.getElementById('cAppLink').value,
                 aboutText: document.getElementById('cAbout').value,
-                deliveryText: document.getElementById('cDelivery').value
+                deliveryText: document.getElementById('cDelivery').value,
+                promoActive: document.getElementById('promoActive').checked,
+                promoTitle: document.getElementById('promoTitle').value,
+                promoEffect: document.getElementById('promoEffect').value
             }, { merge: true });
-            toast("Loja atualizada com sucesso!");
+            toast("Loja e Promoções atualizadas!");
         };
 
         onSnapshot(doc(db, "settings", "store"), s => {
@@ -637,6 +685,10 @@
                 document.getElementById('cAppLink').value = d.appLink || '';
                 document.getElementById('cAbout').value = d.aboutText || '';
                 document.getElementById('cDelivery').value = d.deliveryText || '';
+                
+                document.getElementById('promoActive').checked = d.promoActive || false;
+                document.getElementById('promoTitle').value = d.promoTitle || '';
+                document.getElementById('promoEffect').value = d.promoEffect || 'none';
             }
         });
 
