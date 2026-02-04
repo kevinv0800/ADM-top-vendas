@@ -165,6 +165,7 @@
         <nav style="display: flex; flex-direction: inherit; gap: 5px;">
             <div class="nav-item active" onclick="nav('dash', this)"><i class="fa fa-chart-pie"></i> Dash</div>
             <div class="nav-item" onclick="nav('orders', this)"><i class="fa fa-shopping-bag"></i> Pedidos</div>
+            <div class="nav-item" onclick="nav('reports', this)"><i class="fa fa-file-invoice-dollar"></i> Relatórios</div>
             <div class="nav-item" onclick="nav('users', this)"><i class="fa fa-users"></i> Clientes</div>
             <div class="nav-item" onclick="nav('prod', this)"><i class="fa fa-box-open"></i> Produtos</div>
             <div class="nav-item" onclick="nav('cat', this)"><i class="fa fa-tags"></i> Tags</div>
@@ -220,6 +221,42 @@
             </div>
         </div>
 
+        <div id="view-reports" class="hidden">
+            <h2 style="margin-bottom: 20px;">Relatórios & Comissões</h2>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Comissões (Pagos)</div>
+                    <div class="stat-val" style="color:var(--success)" id="st-total-comm">0 MT</div>
+                    <small style="color:var(--muted)">Baseado em pedidos concluídos</small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Itens Vendidos</div>
+                    <div class="stat-val" id="st-total-items-sold">0</div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3 style="margin-bottom:15px; color:var(--primary);">Histórico de Itens Vendidos</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Produto</th>
+                                <th>Valor Venda</th>
+                                <th style="color:var(--success)">Comissão</th>
+                                <th>Status Pedido</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-sold-items">
+                            <tr><td colspan="5" style="text-align:center">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="view-users" class="hidden">
             <h2 style="margin-bottom: 20px;">Base de Clientes</h2>
             <div class="content-card">
@@ -248,6 +285,11 @@
                         <div><label>Preço (MT)</label><input id="pPrice" type="number" required></div>
                         <div><label style="color:var(--success)">Comissão (MT)</label><input id="pComm" type="number" placeholder="Valor p/ venda"></div>
                     </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>Descrição Detalhada do Produto</label>
+                        <textarea id="pDesc" rows="4" placeholder="Adicione os detalhes técnicos, garantia, estado do produto..."></textarea>
+                    </div>
+
                     <div class="form-grid">
                         <div><label>Categoria</label><select id="pCat"><option>Carregando...</option></select></div>
                         <div><label>Imagem Principal (URL)</label><input id="pImg1" required></div>
@@ -331,11 +373,17 @@
             </div>
 
             <div class="content-card">
-                <h3 style="color:var(--primary); margin-bottom:15px; font-size: 1rem;">Links e Contato</h3>
+                <h3 style="color:var(--primary); margin-bottom:15px; font-size: 1rem;">Links e Redes Sociais</h3>
                 <div class="form-grid">
-                    <div><label>WhatsApp</label><input id="cWa"></div>
-                    <div><label>Telefone</label><input id="cPh"></div>
-                    <div><label>Rede Social</label><input id="cSocial"></div>
+                    <div><label><i class="fa-brands fa-whatsapp"></i> WhatsApp (Número)</label><input id="cWa" placeholder="+258..."></div>
+                    <div><label><i class="fa fa-phone"></i> Telefone (Ligação)</label><input id="cPh"></div>
+                </div>
+                <div class="form-grid">
+                    <div><label><i class="fa-brands fa-facebook"></i> Facebook (Link)</label><input id="cFace" placeholder="https://facebook.com/..."></div>
+                    <div><label><i class="fa-brands fa-instagram"></i> Instagram (Link)</label><input id="cInsta" placeholder="https://instagram.com/..."></div>
+                </div>
+                
+                <div class="form-grid">
                     <div><label>Logo URL</label><input id="cLogo"></div>
                 </div>
                 
@@ -452,6 +500,67 @@
             });
         };
 
+        // --- Lógica de Relatórios (Comissões e Produtos Comprados) ---
+        const updateReports = () => {
+            let totalCommission = 0;
+            let soldItems = [];
+
+            ordersList.forEach(order => {
+                // Processar apenas pedidos concluídos para comissão
+                if(order.status === 'completed' && order.items) {
+                    order.items.forEach(item => {
+                        // Tentar pegar comissão salva no item, ou pegar do produto atual, ou 0
+                        const comm = Number(item.commission) || 0;
+                        totalCommission += comm;
+                        
+                        soldItems.push({
+                            date: order.date,
+                            name: item.name || 'Produto',
+                            price: item.price || 0,
+                            comm: comm,
+                            status: order.status
+                        });
+                    });
+                }
+                // Se quiser mostrar itens de pedidos pendentes na lista (sem somar comissão)
+                else if (order.items) {
+                    order.items.forEach(item => {
+                        soldItems.push({
+                            date: order.date,
+                            name: item.name || 'Produto',
+                            price: item.price || 0,
+                            comm: 0, // Pendente não gera comissão ainda
+                            status: order.status
+                        });
+                    });
+                }
+            });
+
+            // Ordenar itens vendidos por data (mais recente primeiro)
+            soldItems.sort((a,b) => b.date - a.date);
+
+            // Atualizar UI
+            document.getElementById('st-total-comm').innerText = totalCommission.toLocaleString() + " MT";
+            document.getElementById('st-total-items-sold').innerText = soldItems.length;
+
+            const rows = soldItems.map(item => {
+                const dateStr = new Date(item.date).toLocaleDateString();
+                let statusBadge = item.status === 'completed' 
+                    ? '<span style="color:#00e676">Concluído</span>' 
+                    : '<span style="color:#ffb74d">Pendente/Outro</span>';
+
+                return `<tr>
+                    <td>${dateStr}</td>
+                    <td>${item.name}</td>
+                    <td>${item.price} MT</td>
+                    <td style="color:var(--success)">${item.comm > 0 ? item.comm + ' MT' : '-'}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('tb-sold-items').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;">Nenhum item vendido ainda.</td></tr>';
+        };
+
         // --- Pedidos ---
         window.filterOrders = (status, btn) => {
             currentOrderFilter = status;
@@ -517,6 +626,8 @@
             });
 
             renderOrders();
+            updateReports(); // Atualiza a aba de comissões e produtos vendidos
+            
             document.getElementById('st-revenue').innerText = totalRev.toLocaleString() + " MT";
             document.getElementById('st-orders-today').innerText = todayOrders;
             document.getElementById('st-orders-rej').innerText = rejCount;
@@ -567,11 +678,12 @@
             const img2 = document.getElementById('pImg2').value;
             
             try {
-                // ATUALIZADO: Inclui a comissão no cadastro
+                // ATUALIZADO: Salva a descrição detalhada e comissão
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: Number(document.getElementById('pPrice').value),
-                    commission: Number(document.getElementById('pComm').value) || 0, // Campo Novo
+                    commission: Number(document.getElementById('pComm').value) || 0,
+                    details: document.getElementById('pDesc').value || '', // Campo Detalhes
                     cat: document.getElementById('pCat').value,
                     img: img1,
                     images: [img1, img2].filter(Boolean),
@@ -591,7 +703,6 @@
         });
 
         window.renderProdTable = (list) => {
-            // ATUALIZADO: Mostra a coluna de comissão
             document.getElementById('tb-prod').innerHTML = list.map(p => `
                 <tr>
                     <td><img src="${p.img}" class="img-thumb"></td>
@@ -660,10 +771,12 @@
 
         // --- Configurações & Promoções ---
         window.saveConfig = async () => {
+            // ATUALIZADO: Salva os novos campos sociais
             await setDoc(doc(db, "settings", "store"), {
                 whatsapp: document.getElementById('cWa').value,
                 phone: document.getElementById('cPh').value,
-                social: document.getElementById('cSocial').value,
+                facebook: document.getElementById('cFace').value, // Novo
+                instagram: document.getElementById('cInsta').value, // Novo
                 logo: document.getElementById('cLogo').value,
                 appLink: document.getElementById('cAppLink').value,
                 aboutText: document.getElementById('cAbout').value,
@@ -680,7 +793,10 @@
                 const d = s.data();
                 document.getElementById('cWa').value = d.whatsapp || '';
                 document.getElementById('cPh').value = d.phone || '';
-                document.getElementById('cSocial').value = d.social || '';
+                // Preencher novos campos
+                document.getElementById('cFace').value = d.facebook || '';
+                document.getElementById('cInsta').value = d.instagram || '';
+                
                 document.getElementById('cLogo').value = d.logo || '';
                 document.getElementById('cAppLink').value = d.appLink || '';
                 document.getElementById('cAbout').value = d.aboutText || '';
