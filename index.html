@@ -97,6 +97,9 @@
         input, select, textarea { width: 100%; background: #080808; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: #fff; outline: none; transition: var(--transition); }
         input:focus, textarea:focus { border-color: var(--primary); background: #0c0c0c; }
         
+        /* Input especial para data */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
         .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
         .btn-primary { background: var(--primary); color: #000; }
         .btn-primary:hover { filter: brightness(1.2); box-shadow: 0 0 15px rgba(41, 182, 246, 0.3); }
@@ -282,14 +285,30 @@
                 <form id="f-prod">
                     <div class="form-grid">
                         <div><label>Nome do Produto</label><input id="pName" required placeholder="Ex: iPhone 15"></div>
-                        <div><label>Preço (MT)</label><input id="pPrice" type="number" required></div>
+                        <div><label>Preço Original (MT)</label><input id="pPrice" type="number" required></div>
                         <div><label style="color:var(--success)">Comissão (MT)</label><input id="pComm" type="number" placeholder="Valor p/ venda"></div>
                     </div>
+                    
                     <div style="margin-bottom: 15px;">
                         <label>Descrição Detalhada do Produto</label>
                         <textarea id="pDesc" rows="4" placeholder="Adicione os detalhes técnicos, garantia, estado do produto..."></textarea>
                     </div>
 
+                    <div style="background: rgba(255, 183, 77, 0.05); padding: 15px; border-radius: 8px; border: 1px dashed var(--warning); margin-bottom: 20px;">
+                        <h4 style="color: var(--warning); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa fa-tags"></i> Oferta Relâmpago / Promoção
+                        </h4>
+                        <div class="form-grid">
+                            <div>
+                                <label style="color:var(--warning)">Preço Promocional (Opcional)</label>
+                                <input id="pPromoPrice" type="number" placeholder="Deixe 0 se não tiver desconto">
+                            </div>
+                            <div>
+                                <label>Validade da Promoção</label>
+                                <input id="pPromoValid" type="datetime-local">
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-grid">
                         <div><label>Categoria</label><select id="pCat"><option>Carregando...</option></select></div>
                         <div><label>Imagem Principal (URL)</label><input id="pImg1" required></div>
@@ -307,7 +326,7 @@
                 <input oninput="filterTable(this.value)" placeholder="🔍 Buscar produto..." style="margin-bottom:15px; max-width: 400px;">
                 <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Foto</th><th>Nome</th><th>Preço</th><th style="color:var(--success)">Comissão</th><th>Categ.</th><th>Excluir</th></tr></thead>
+                        <thead><tr><th>Foto</th><th>Nome</th><th>Preço</th><th style="color:var(--success)">Comissão</th><th>Status Promo</th><th>Excluir</th></tr></thead>
                         <tbody id="tb-prod"></tbody>
                     </table>
                 </div>
@@ -344,7 +363,7 @@
             
             <div class="content-card" style="border: 1px solid var(--warning);">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
-                    <h3 style="color:var(--warning); font-size: 1.1rem;"><i class="fa fa-gift"></i> Promoção Festiva</h3>
+                    <h3 style="color:var(--warning); font-size: 1.1rem;"><i class="fa fa-gift"></i> Promoção Festiva (Tema)</h3>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span style="font-size:0.85rem; color:var(--muted)">Ativar Efeitos</span>
                         <label class="switch">
@@ -506,13 +525,10 @@
             let soldItems = [];
 
             ordersList.forEach(order => {
-                // Processar apenas pedidos concluídos para comissão
                 if(order.status === 'completed' && order.items) {
                     order.items.forEach(item => {
-                        // Tentar pegar comissão salva no item, ou pegar do produto atual, ou 0
                         const comm = Number(item.commission) || 0;
                         totalCommission += comm;
-                        
                         soldItems.push({
                             date: order.date,
                             name: item.name || 'Produto',
@@ -522,24 +538,21 @@
                         });
                     });
                 }
-                // Se quiser mostrar itens de pedidos pendentes na lista (sem somar comissão)
                 else if (order.items) {
                     order.items.forEach(item => {
                         soldItems.push({
                             date: order.date,
                             name: item.name || 'Produto',
                             price: item.price || 0,
-                            comm: 0, // Pendente não gera comissão ainda
+                            comm: 0,
                             status: order.status
                         });
                     });
                 }
             });
 
-            // Ordenar itens vendidos por data (mais recente primeiro)
             soldItems.sort((a,b) => b.date - a.date);
 
-            // Atualizar UI
             document.getElementById('st-total-comm').innerText = totalCommission.toLocaleString() + " MT";
             document.getElementById('st-total-items-sold').innerText = soldItems.length;
 
@@ -626,7 +639,7 @@
             });
 
             renderOrders();
-            updateReports(); // Atualiza a aba de comissões e produtos vendidos
+            updateReports();
             
             document.getElementById('st-revenue').innerText = totalRev.toLocaleString() + " MT";
             document.getElementById('st-orders-today').innerText = todayOrders;
@@ -678,12 +691,17 @@
             const img2 = document.getElementById('pImg2').value;
             
             try {
-                // ATUALIZADO: Salva a descrição detalhada e comissão
+                // ATUALIZADO: Salva promo e validade
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: Number(document.getElementById('pPrice').value),
                     commission: Number(document.getElementById('pComm').value) || 0,
-                    details: document.getElementById('pDesc').value || '', // Campo Detalhes
+                    
+                    // Novos campos de promoção
+                    promoPrice: Number(document.getElementById('pPromoPrice').value) || 0,
+                    promoValid: document.getElementById('pPromoValid').value || '',
+
+                    details: document.getElementById('pDesc').value || '', 
                     cat: document.getElementById('pCat').value,
                     img: img1,
                     images: [img1, img2].filter(Boolean),
@@ -694,7 +712,7 @@
                 e.target.reset();
                 toast("Produto publicado com sucesso!");
                 toggleForm('prodForm');
-            } catch(err) { toast("Erro ao salvar", "error"); }
+            } catch(err) { console.error(err); toast("Erro ao salvar", "error"); }
         };
 
         onSnapshot(collection(db, "products"), (snap) => {
@@ -703,16 +721,27 @@
         });
 
         window.renderProdTable = (list) => {
-            document.getElementById('tb-prod').innerHTML = list.map(p => `
+            document.getElementById('tb-prod').innerHTML = list.map(p => {
+                // Lógica visual da promoção na tabela
+                const hasPromo = p.promoPrice > 0 && p.promoValid;
+                const priceDisplay = hasPromo 
+                    ? `<span style="text-decoration:line-through; color:var(--muted); font-size:0.8rem;">${p.price}</span> <br> <span style="color:var(--warning); font-weight:bold">${p.promoPrice} MT</span>`
+                    : `${p.price} MT`;
+                
+                const promoBadge = hasPromo 
+                    ? `<span style="color:var(--warning); font-size:0.75rem;"><i class="fa fa-clock"></i> Até ${new Date(p.promoValid).toLocaleDateString()}</span>` 
+                    : '<span style="color:var(--muted);">-</span>';
+
+                return `
                 <tr>
                     <td><img src="${p.img}" class="img-thumb"></td>
                     <td>${p.name}</td>
-                    <td>${p.price} MT</td>
+                    <td>${priceDisplay}</td>
                     <td style="color:var(--success); font-weight:bold;">${p.commission || 0} MT</td>
-                    <td>${p.cat}</td>
+                    <td>${promoBadge}</td>
                     <td><button class="btn btn-danger" onclick="delItem('products', '${p.id}')"><i class="fa fa-trash"></i></button></td>
                 </tr>
-            `).join('');
+            `}).join('');
         };
         window.filterTable = (v) => renderProdTable(productsList.filter(p => p.name.toLowerCase().includes(v.toLowerCase())));
 
@@ -771,12 +800,11 @@
 
         // --- Configurações & Promoções ---
         window.saveConfig = async () => {
-            // ATUALIZADO: Salva os novos campos sociais
             await setDoc(doc(db, "settings", "store"), {
                 whatsapp: document.getElementById('cWa').value,
                 phone: document.getElementById('cPh').value,
-                facebook: document.getElementById('cFace').value, // Novo
-                instagram: document.getElementById('cInsta').value, // Novo
+                facebook: document.getElementById('cFace').value,
+                instagram: document.getElementById('cInsta').value,
                 logo: document.getElementById('cLogo').value,
                 appLink: document.getElementById('cAppLink').value,
                 aboutText: document.getElementById('cAbout').value,
@@ -793,7 +821,6 @@
                 const d = s.data();
                 document.getElementById('cWa').value = d.whatsapp || '';
                 document.getElementById('cPh').value = d.phone || '';
-                // Preencher novos campos
                 document.getElementById('cFace').value = d.facebook || '';
                 document.getElementById('cInsta').value = d.instagram || '';
                 
