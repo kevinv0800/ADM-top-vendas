@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER ADMIN | Ultra</title>
+    <title>MASTER ADMIN | Ultra Safe</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700&display=swap" rel="stylesheet">
@@ -33,6 +33,21 @@
         body { 
             background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; animation: fadeIn 0.8s ease;
         }
+
+        /* --- TELA DE LOGIN --- */
+        #login-screen {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+        #login-screen.hide { opacity: 0; pointer-events: none; }
+        
+        .login-box {
+            width: 100%; max-width: 350px; padding: 40px; background: var(--card);
+            border-radius: 20px; border: 1px solid var(--border); text-align: center;
+            box-shadow: 0 0 50px rgba(41, 182, 246, 0.1);
+        }
+        /* --------------------- */
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -71,6 +86,9 @@
         .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; transform: translateX(5px); }
         .nav-item.active { background: rgba(41, 182, 246, 0.1); color: var(--primary); font-weight: 700; }
 
+        .logout-btn { margin-top: auto; color: var(--danger); border: 1px solid rgba(239, 83, 80, 0.2); }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
         main { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
         
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
@@ -97,7 +115,6 @@
         input, select, textarea { width: 100%; background: #080808; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: #fff; outline: none; transition: var(--transition); }
         input:focus, textarea:focus { border-color: var(--primary); background: #0c0c0c; }
         
-        /* Input especial para data */
         input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
         .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
@@ -119,12 +136,10 @@
         .img-thumb { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: #222; transition: 0.3s; }
         .img-thumb:hover { transform: scale(1.1); }
 
-        /* Abas de Filtro */
         .filter-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-btn { padding: 8px 16px; border-radius: 20px; background: #222; border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
         .filter-btn.active { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
 
-        /* Switch Toggle Style */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid var(--border); }
@@ -142,12 +157,27 @@
             }
             .brand { margin-bottom: 0; margin-right: 20px; font-size: 1rem; }
             .nav-item { margin-bottom: 0; padding: 10px 15px; white-space: nowrap; font-size: 0.85rem; }
+            .logout-btn { margin-top: 0; margin-left: auto; }
             main { padding: 20px; }
             .stat-val { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <div style="font-size:2rem; font-weight:800; margin-bottom:30px; color:#fff;">MASTER <span style="color:var(--primary)">ULTRA</span></div>
+            <div style="margin-bottom:15px">
+                <input type="email" id="txtEmail" placeholder="Email Administrativo" style="text-align:center;">
+            </div>
+            <div style="margin-bottom:25px">
+                <input type="password" id="txtPass" placeholder="Senha de Acesso" style="text-align:center;">
+            </div>
+            <button class="btn btn-primary" id="btnLogin" style="width:100%;">ACESSAR PAINEL</button>
+            <p id="loginMsg" style="color:var(--danger); margin-top:15px; font-size:0.85rem; min-height:20px;"></p>
+        </div>
+    </div>
 
     <div id="c-toast"><i class="fa fa-info-circle"></i> <span>Ação realizada</span></div>
 
@@ -165,7 +195,7 @@
 
     <aside>
         <div class="brand"><i class="fa fa-layer-group"></i> MASTER <span>ULTRA</span></div>
-        <nav style="display: flex; flex-direction: inherit; gap: 5px;">
+        <nav style="display: flex; flex-direction: inherit; gap: 5px; flex:1;">
             <div class="nav-item active" onclick="nav('dash', this)"><i class="fa fa-chart-pie"></i> Dash</div>
             <div class="nav-item" onclick="nav('orders', this)"><i class="fa fa-shopping-bag"></i> Pedidos</div>
             <div class="nav-item" onclick="nav('reports', this)"><i class="fa fa-file-invoice-dollar"></i> Relatórios</div>
@@ -175,6 +205,10 @@
             <div class="nav-item" onclick="nav('banners', this)"><i class="fa fa-images"></i> Banners</div>
             <div class="nav-item" onclick="nav('content', this)"><i class="fa fa-cog"></i> Ajustes</div>
         </nav>
+        
+        <button class="nav-item logout-btn" onclick="logout()">
+            <i class="fa fa-sign-out-alt"></i> Sair
+        </button>
     </aside>
 
     <main>
@@ -183,7 +217,7 @@
             <div class="dashboard-grid">
                 <div class="stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-title">Faturamento (Pagos)</div>
-                    <div class="stat-val" style="color:var(--success)" id="st-revenue">0 MT</div>
+                    <div class="stat-val" style="color:var(--success)" id="st-revenue">0,00 MT</div>
                 </div>
                 <div class="stat-card" style="animation-delay: 0.2s;">
                     <div class="stat-title">Pedidos Hoje</div>
@@ -198,7 +232,6 @@
                     <div class="stat-val" style="color:var(--warning)" id="st-users">0</div>
                 </div>
             </div>
-            
             <div class="chart-container">
                 <canvas id="salesChart"></canvas>
             </div>
@@ -206,14 +239,12 @@
 
         <div id="view-orders" class="hidden">
             <h2 style="margin-bottom: 20px;">Gestão de Pedidos</h2>
-            
             <div class="filter-tabs">
                 <div class="filter-btn active" onclick="filterOrders('all', this)">Todos</div>
                 <div class="filter-btn" onclick="filterOrders('pending', this)">Pendentes</div>
                 <div class="filter-btn" onclick="filterOrders('completed', this)">Concluídos</div>
                 <div class="filter-btn" onclick="filterOrders('rejected', this)">Recusados</div>
             </div>
-
             <div class="content-card">
                 <div class="table-responsive">
                     <table>
@@ -226,11 +257,10 @@
 
         <div id="view-reports" class="hidden">
             <h2 style="margin-bottom: 20px;">Relatórios & Comissões</h2>
-            
             <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-title">Total Comissões (Pagos)</div>
-                    <div class="stat-val" style="color:var(--success)" id="st-total-comm">0 MT</div>
+                    <div class="stat-val" style="color:var(--success)" id="st-total-comm">0,00 MT</div>
                     <small style="color:var(--muted)">Baseado em pedidos concluídos</small>
                 </div>
                 <div class="stat-card">
@@ -238,7 +268,6 @@
                     <div class="stat-val" id="st-total-items-sold">0</div>
                 </div>
             </div>
-
             <div class="content-card">
                 <h3 style="margin-bottom:15px; color:var(--primary);">Histórico de Itens Vendidos</h3>
                 <div class="table-responsive">
@@ -353,14 +382,12 @@
                     <div><label>Link de Redirecionamento (Opcional)</label><input id="bLink" placeholder="Para onde vai ao clicar?"></div>
                 </div>
                 <button class="btn btn-primary" onclick="addBanner()">Adicionar Banner</button>
-                
                 <div id="banner-list" style="margin-top:20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px;"></div>
             </div>
         </div>
 
         <div id="view-content" class="hidden">
             <h2>Gestão de Conteúdo</h2>
-            
             <div class="content-card" style="border: 1px solid var(--warning);">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
                     <h3 style="color:var(--warning); font-size: 1.1rem;"><i class="fa fa-gift"></i> Promoção Festiva (Tema)</h3>
@@ -372,12 +399,8 @@
                         </label>
                     </div>
                 </div>
-                
                 <div class="form-grid">
-                    <div>
-                        <label>Título do Evento</label>
-                        <input id="promoTitle" placeholder="Ex: Feliz Natal, Black Friday...">
-                    </div>
+                    <div><label>Título do Evento</label><input id="promoTitle" placeholder="Ex: Feliz Natal, Black Friday..."></div>
                     <div>
                         <label>Animação da Loja</label>
                         <select id="promoEffect">
@@ -401,37 +424,30 @@
                     <div><label><i class="fa-brands fa-facebook"></i> Facebook (Link)</label><input id="cFace" placeholder="https://facebook.com/..."></div>
                     <div><label><i class="fa-brands fa-instagram"></i> Instagram (Link)</label><input id="cInsta" placeholder="https://instagram.com/..."></div>
                 </div>
-                
                 <div class="form-grid">
                     <div><label>Logo URL</label><input id="cLogo"></div>
                 </div>
-                
                 <div style="margin-top: 15px;">
                     <label style="color:var(--success)">Link de Download do App</label>
                     <input id="cAppLink" placeholder="Link da Play Store / Baixar APK">
                 </div>
-
                 <h3 style="color:var(--primary); margin:20px 0 15px; font-size: 1rem;">Textos da Loja</h3>
                 <div class="form-grid" style="grid-template-columns: 1fr;">
-                    <div>
-                        <label>Sobre Nós</label>
-                        <textarea id="cAbout" rows="3"></textarea>
-                    </div>
-                    <div>
-                        <label>Informações de Entrega</label>
-                        <textarea id="cDelivery" rows="3"></textarea>
-                    </div>
+                    <div><label>Sobre Nós</label><textarea id="cAbout" rows="3"></textarea></div>
+                    <div><label>Informações de Entrega</label><textarea id="cDelivery" rows="3"></textarea></div>
                 </div>
-
                 <button class="btn btn-primary" style="margin-top:10px;" onclick="saveConfig()">Atualizar Loja</button>
             </div>
         </div>
     </main>
 
     <script type="module">
+        // Importações Atualizadas para incluir AUTH
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // SUAS CONFIGURAÇÕES FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAPKEeQwU3vsNqWyLjgb7czsk_8-wzPfPo",
             authDomain: "criador-6da7a.firebaseapp.com",
@@ -443,12 +459,160 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app); // Inicializa Auth
         
         let productsList = [];
         let ordersList = [];
         let usersList = [];
         let salesChart = null;
         let currentOrderFilter = 'all';
+
+        // --- AUTENTICAÇÃO E LOGIN ---
+        const loginScreen = document.getElementById('login-screen');
+        const loginBtn = document.getElementById('btnLogin');
+        const loginMsg = document.getElementById('loginMsg');
+
+        // Login
+        loginBtn.onclick = async () => {
+            const email = document.getElementById('txtEmail').value;
+            const pass = document.getElementById('txtPass').value;
+            
+            if(!email || !pass) { loginMsg.innerText = "Preencha todos os campos"; return; }
+            
+            loginMsg.innerText = "Verificando credenciais...";
+            loginBtn.disabled = true;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // O onAuthStateChanged vai lidar com a entrada
+            } catch(error) {
+                console.error(error);
+                loginMsg.innerText = "Erro: Email ou senha incorretos.";
+                loginBtn.disabled = false;
+            }
+        };
+
+        // Logout
+        window.logout = async () => {
+            if(confirm("Deseja realmente sair?")) {
+                await signOut(auth);
+                window.location.reload(); // Recarrega para limpar memória
+            }
+        };
+
+        // Monitor de Estado (Gatekeeper)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginScreen.classList.add('hide');
+                toast(`Bem-vindo, ${user.email}`);
+                startSystem(); // Só inicia o download de dados se logado
+            } else {
+                loginScreen.classList.remove('hide');
+                loginBtn.disabled = false;
+                loginMsg.innerText = "";
+            }
+        });
+
+        // --- SISTEMA PRINCIPAL (Iniciado apenas após login) ---
+        function startSystem() {
+            // Ouvinte de Pedidos
+            onSnapshot(query(collection(db, "orders"), orderBy("date", "desc")), (snap) => {
+                ordersList = [];
+                let totalRev = 0, todayOrders = 0, rejCount = 0;
+                const salesData = {};
+                const today = new Date().toLocaleDateString();
+
+                snap.docs.forEach(d => {
+                    const data = { id: d.id, ...d.data() };
+                    ordersList.push(data);
+
+                    const dateStr = new Date(data.date).toLocaleDateString();
+                    
+                    if(data.status === 'completed') {
+                        totalRev += (data.total || 0);
+                        salesData[dateStr] = (salesData[dateStr] || 0) + (data.total || 0);
+                    }
+                    if(data.status === 'rejected') rejCount++;
+                    if(dateStr === today) todayOrders++;
+                });
+
+                renderOrders();
+                updateReports();
+                
+                document.getElementById('st-revenue').innerText = formatMT(totalRev);
+                document.getElementById('st-orders-today').innerText = todayOrders;
+                document.getElementById('st-orders-rej').innerText = rejCount;
+                
+                const sortedSales = Object.keys(salesData).sort().reduce((obj, key) => { obj[key] = salesData[key]; return obj; }, {});
+                initChart(sortedSales);
+            });
+
+            // Ouvinte de Usuários
+            onSnapshot(collection(db, "users"), (snap) => {
+                document.getElementById('st-users').innerText = snap.size;
+                usersList = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                renderUsers();
+            });
+
+            // Ouvinte de Produtos
+            onSnapshot(collection(db, "products"), (snap) => {
+                productsList = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                renderProdTable(productsList);
+            });
+
+            // Ouvinte de Categorias
+            onSnapshot(collection(db, "categories"), snap => {
+                let chips = '';
+                let opts = '<option value="todos">Selecione...</option>';
+                snap.docs.forEach(d => {
+                    const c = d.data();
+                    chips += `<div class="status-badge" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; cursor:pointer; border-radius: 50px; font-size: 0.8rem;" onclick="delItem('categories', '${d.id}')">${c.name} <i class="fa fa-times" style="margin-left:5px; color:red;"></i></div>`;
+                    opts += `<option value="${c.id}">${c.name}</option>`;
+                });
+                document.getElementById('cat-chips').innerHTML = chips;
+                document.getElementById('pCat').innerHTML = opts;
+            });
+
+            // Ouvinte de Banners
+            onSnapshot(collection(db, "banners"), snap => {
+                document.getElementById('banner-list').innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    const mediaHtml = data.type === 'video' 
+                        ? `<video src="${data.url}" style="width:100%; height:100px; object-fit:cover" autoplay loop muted playsinline></video>` 
+                        : `<img src="${data.url}" style="width:100%; height:100px; object-fit:cover">`;
+
+                    return `
+                    <div style="position:relative; border:1px solid #333; border-radius:8px; overflow:hidden; animation: slideUp 0.3s ease;">
+                        ${mediaHtml}
+                        ${data.targetLink ? '<div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.7); color:#fff; font-size:0.7rem; padding:3px 5px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden;"><i class="fa fa-link"></i> '+data.targetLink+'</div>' : ''}
+                        <button class="btn btn-danger" style="position:absolute; top:5px; right:5px; padding:5px 8px; font-size: 0.7rem;" onclick="delItem('banners', '${d.id}')"><i class="fa fa-trash"></i></button>
+                    </div>
+                `}).join('');
+            });
+
+            // Ouvinte de Configurações
+            onSnapshot(doc(db, "settings", "store"), s => {
+                if(s.exists()) {
+                    const d = s.data();
+                    document.getElementById('cWa').value = d.whatsapp || '';
+                    document.getElementById('cPh').value = d.phone || '';
+                    document.getElementById('cFace').value = d.facebook || '';
+                    document.getElementById('cInsta').value = d.instagram || '';
+                    document.getElementById('cLogo').value = d.logo || '';
+                    document.getElementById('cAppLink').value = d.appLink || '';
+                    document.getElementById('cAbout').value = d.aboutText || '';
+                    document.getElementById('cDelivery').value = d.deliveryText || '';
+                    document.getElementById('promoActive').checked = d.promoActive || false;
+                    document.getElementById('promoTitle').value = d.promoTitle || '';
+                    document.getElementById('promoEffect').value = d.promoEffect || 'none';
+                }
+            });
+        }
+
+        // --- UTILITÁRIOS GLOBAIS ---
+        
+        // Formatador de Moeda
+        const formatMT = (val) => new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(val);
 
         window.toast = (msg, type = 'success') => {
             const t = document.getElementById('c-toast');
@@ -486,7 +650,7 @@
         };
         window.toggleForm = (id) => document.getElementById(id).classList.toggle('hidden');
 
-        // --- Gráfico ---
+        // --- CHART ---
         const initChart = (data) => {
             const ctx = document.getElementById('salesChart').getContext('2d');
             if(salesChart) salesChart.destroy();
@@ -496,7 +660,7 @@
                 data: {
                     labels: Object.keys(data),
                     datasets: [{
-                        label: 'Vendas (MT)',
+                        label: 'Vendas',
                         data: Object.values(data),
                         borderColor: '#29b6f6',
                         backgroundColor: 'rgba(41, 182, 246, 0.1)',
@@ -519,7 +683,7 @@
             });
         };
 
-        // --- Lógica de Relatórios (Comissões e Produtos Comprados) ---
+        // --- RELATÓRIOS ---
         const updateReports = () => {
             let totalCommission = 0;
             let soldItems = [];
@@ -553,7 +717,7 @@
 
             soldItems.sort((a,b) => b.date - a.date);
 
-            document.getElementById('st-total-comm').innerText = totalCommission.toLocaleString() + " MT";
+            document.getElementById('st-total-comm').innerText = formatMT(totalCommission);
             document.getElementById('st-total-items-sold').innerText = soldItems.length;
 
             const rows = soldItems.map(item => {
@@ -565,8 +729,8 @@
                 return `<tr>
                     <td>${dateStr}</td>
                     <td>${item.name}</td>
-                    <td>${item.price} MT</td>
-                    <td style="color:var(--success)">${item.comm > 0 ? item.comm + ' MT' : '-'}</td>
+                    <td>${formatMT(item.price)}</td>
+                    <td style="color:var(--success)">${item.comm > 0 ? formatMT(item.comm) : '-'}</td>
                     <td>${statusBadge}</td>
                 </tr>`;
             }).join('');
@@ -574,7 +738,7 @@
             document.getElementById('tb-sold-items').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;">Nenhum item vendido ainda.</td></tr>';
         };
 
-        // --- Pedidos ---
+        // --- PEDIDOS ---
         window.filterOrders = (status, btn) => {
             currentOrderFilter = status;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -599,7 +763,7 @@
                     <td>${dateStr}</td>
                     <td>${data.userName}</td>
                     <td>${data.items ? data.items.length : 0} itens</td>
-                    <td>${(data.total || 0).toLocaleString()} MT</td>
+                    <td>${formatMT(data.total || 0)}</td>
                     <td>${statusBadge}</td>
                     <td style="display:flex; gap:5px;">
                         <button class="btn btn-success" style="padding:6px 10px" title="Aprovar" onclick="updateStatus('${data.id}', 'completed')"><i class="fa fa-check"></i></button>
@@ -618,44 +782,7 @@
             }
         };
 
-        onSnapshot(query(collection(db, "orders"), orderBy("date", "desc")), (snap) => {
-            ordersList = [];
-            let totalRev = 0, todayOrders = 0, rejCount = 0;
-            const salesData = {};
-            const today = new Date().toLocaleDateString();
-
-            snap.docs.forEach(d => {
-                const data = { id: d.id, ...d.data() };
-                ordersList.push(data);
-
-                const dateStr = new Date(data.date).toLocaleDateString();
-                
-                if(data.status === 'completed') {
-                    totalRev += (data.total || 0);
-                    salesData[dateStr] = (salesData[dateStr] || 0) + (data.total || 0);
-                }
-                if(data.status === 'rejected') rejCount++;
-                if(dateStr === today) todayOrders++;
-            });
-
-            renderOrders();
-            updateReports();
-            
-            document.getElementById('st-revenue').innerText = totalRev.toLocaleString() + " MT";
-            document.getElementById('st-orders-today').innerText = todayOrders;
-            document.getElementById('st-orders-rej').innerText = rejCount;
-            
-            const sortedSales = Object.keys(salesData).sort().reduce((obj, key) => { obj[key] = salesData[key]; return obj; }, {});
-            initChart(sortedSales);
-        });
-
-        // --- Usuários ---
-        onSnapshot(collection(db, "users"), (snap) => {
-            document.getElementById('st-users').innerText = snap.size;
-            usersList = snap.docs.map(d => ({id:d.id, ...d.data()}));
-            renderUsers();
-        });
-
+        // --- USUÁRIOS ---
         window.renderUsers = () => {
             document.getElementById('tb-users').innerHTML = usersList.map(u => {
                 const wppLink = u.phone ? `https://wa.me/${u.phone.replace(/\D/g,'')}` : '#';
@@ -681,26 +808,22 @@
             const original = [...usersList];
             usersList = usersList.filter(u => (u.name && u.name.toLowerCase().includes(term)) || (u.email && u.email.toLowerCase().includes(term)));
             renderUsers();
-            usersList = original;
+            usersList = original; // Restaura a lista original
         };
 
-        // --- Produtos ---
+        // --- PRODUTOS ---
         document.getElementById('f-prod').onsubmit = async (e) => {
             e.preventDefault();
             const img1 = document.getElementById('pImg1').value;
             const img2 = document.getElementById('pImg2').value;
             
             try {
-                // ATUALIZADO: Salva promo e validade
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: Number(document.getElementById('pPrice').value),
                     commission: Number(document.getElementById('pComm').value) || 0,
-                    
-                    // Novos campos de promoção
                     promoPrice: Number(document.getElementById('pPromoPrice').value) || 0,
                     promoValid: document.getElementById('pPromoValid').value || '',
-
                     details: document.getElementById('pDesc').value || '', 
                     cat: document.getElementById('pCat').value,
                     img: img1,
@@ -715,18 +838,12 @@
             } catch(err) { console.error(err); toast("Erro ao salvar", "error"); }
         };
 
-        onSnapshot(collection(db, "products"), (snap) => {
-            productsList = snap.docs.map(d => ({id:d.id, ...d.data()}));
-            renderProdTable(productsList);
-        });
-
         window.renderProdTable = (list) => {
             document.getElementById('tb-prod').innerHTML = list.map(p => {
-                // Lógica visual da promoção na tabela
                 const hasPromo = p.promoPrice > 0 && p.promoValid;
                 const priceDisplay = hasPromo 
-                    ? `<span style="text-decoration:line-through; color:var(--muted); font-size:0.8rem;">${p.price}</span> <br> <span style="color:var(--warning); font-weight:bold">${p.promoPrice} MT</span>`
-                    : `${p.price} MT`;
+                    ? `<span style="text-decoration:line-through; color:var(--muted); font-size:0.8rem;">${formatMT(p.price)}</span> <br> <span style="color:var(--warning); font-weight:bold">${formatMT(p.promoPrice)}</span>`
+                    : `${formatMT(p.price)}`;
                 
                 const promoBadge = hasPromo 
                     ? `<span style="color:var(--warning); font-size:0.75rem;"><i class="fa fa-clock"></i> Até ${new Date(p.promoValid).toLocaleDateString()}</span>` 
@@ -737,7 +854,7 @@
                     <td><img src="${p.img}" class="img-thumb"></td>
                     <td>${p.name}</td>
                     <td>${priceDisplay}</td>
-                    <td style="color:var(--success); font-weight:bold;">${p.commission || 0} MT</td>
+                    <td style="color:var(--success); font-weight:bold;">${formatMT(p.commission || 0)}</td>
                     <td>${promoBadge}</td>
                     <td><button class="btn btn-danger" onclick="delItem('products', '${p.id}')"><i class="fa fa-trash"></i></button></td>
                 </tr>
@@ -745,7 +862,7 @@
         };
         window.filterTable = (v) => renderProdTable(productsList.filter(p => p.name.toLowerCase().includes(v.toLowerCase())));
 
-        // --- Categorias ---
+        // --- CATEGORIAS & BANNERS & GERAL ---
         window.addCategory = async () => {
             const name = document.getElementById('catName').value;
             if(!name) return;
@@ -755,19 +872,6 @@
             toast("Categoria criada!");
         };
 
-        onSnapshot(collection(db, "categories"), snap => {
-            let chips = '';
-            let opts = '<option value="todos">Selecione...</option>';
-            snap.docs.forEach(d => {
-                const c = d.data();
-                chips += `<div class="status-badge" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; cursor:pointer; border-radius: 50px; font-size: 0.8rem;" onclick="delItem('categories', '${d.id}')">${c.name} <i class="fa fa-times" style="margin-left:5px; color:red;"></i></div>`;
-                opts += `<option value="${c.id}">${c.name}</option>`;
-            });
-            document.getElementById('cat-chips').innerHTML = chips;
-            document.getElementById('pCat').innerHTML = opts;
-        });
-
-        // --- Banners ---
         window.addBanner = async () => {
             const url = document.getElementById('bUrl').value;
             const link = document.getElementById('bLink').value;
@@ -782,23 +886,6 @@
             toast("Banner adicionado!");
         };
 
-        onSnapshot(collection(db, "banners"), snap => {
-            document.getElementById('banner-list').innerHTML = snap.docs.map(d => {
-                const data = d.data();
-                const mediaHtml = data.type === 'video' 
-                    ? `<video src="${data.url}" style="width:100%; height:100px; object-fit:cover" autoplay loop muted playsinline></video>` 
-                    : `<img src="${data.url}" style="width:100%; height:100px; object-fit:cover">`;
-
-                return `
-                <div style="position:relative; border:1px solid #333; border-radius:8px; overflow:hidden; animation: slideUp 0.3s ease;">
-                    ${mediaHtml}
-                    ${data.targetLink ? '<div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.7); color:#fff; font-size:0.7rem; padding:3px 5px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden;"><i class="fa fa-link"></i> '+data.targetLink+'</div>' : ''}
-                    <button class="btn btn-danger" style="position:absolute; top:5px; right:5px; padding:5px 8px; font-size: 0.7rem;" onclick="delItem('banners', '${d.id}')"><i class="fa fa-trash"></i></button>
-                </div>
-            `}).join('');
-        });
-
-        // --- Configurações & Promoções ---
         window.saveConfig = async () => {
             await setDoc(doc(db, "settings", "store"), {
                 whatsapp: document.getElementById('cWa').value,
@@ -815,25 +902,6 @@
             }, { merge: true });
             toast("Loja e Promoções atualizadas!");
         };
-
-        onSnapshot(doc(db, "settings", "store"), s => {
-            if(s.exists()) {
-                const d = s.data();
-                document.getElementById('cWa').value = d.whatsapp || '';
-                document.getElementById('cPh').value = d.phone || '';
-                document.getElementById('cFace').value = d.facebook || '';
-                document.getElementById('cInsta').value = d.instagram || '';
-                
-                document.getElementById('cLogo').value = d.logo || '';
-                document.getElementById('cAppLink').value = d.appLink || '';
-                document.getElementById('cAbout').value = d.aboutText || '';
-                document.getElementById('cDelivery').value = d.deliveryText || '';
-                
-                document.getElementById('promoActive').checked = d.promoActive || false;
-                document.getElementById('promoTitle').value = d.promoTitle || '';
-                document.getElementById('promoEffect').value = d.promoEffect || 'none';
-            }
-        });
 
         window.delItem = (col, id) => {
             askDelete(async () => {
